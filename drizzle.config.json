@@ -1,0 +1,5 @@
+{ 
+  "dialect": "pg", 
+  "out": "./migrations-folder", 
+  "schema": "./src/data/schema.ts" 
+}
