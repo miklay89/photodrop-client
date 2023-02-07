@@ -6,13 +6,6 @@ kill_timeout = 5
 processes = []
 
 [env]
-  DB_DATABASE_NAME = "where_is_my_clinic"
-  DB_HOST = "dpg-ce0tkv82i3mkucdokgq0-a.frankfurt-postgres.render.com"
-  DB_PASSWORD = "0bH07at2twJqFK6ecofGLJ5IE3Sdx9LF"
-  DB_PORT = "5432"
-  DB_USER = "where_is_my_clinic_user"
-  PORT = "8080"
-  TOKEN_SECRET = "SUPER SeCReT TOKEN value 5000 POINTS"
 
 [experimental]
   allowed_public_ports = []
