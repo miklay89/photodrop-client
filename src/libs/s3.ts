@@ -20,7 +20,7 @@ const uploadFileToS3 = async (file: Buffer, extName: string) => {
   const uploadParams = {
     Bucket: bucketName,
     Body: file,
-    Key: `${uuid()}.${extName}`,
+    Key: `selfie-${uuid()}.${extName}`,
   };
 
   const result = await s3.upload(uploadParams).promise();

@@ -7,7 +7,7 @@ import authRoutes from "./routes/auth";
 import dashboardRoutes from "./routes/dashboard";
 import userRoutes from "./routes/user";
 import payRoutes from "./routes/pay";
-import errorHandler from "./libs/error_handler";
+import errorHandler from "./utils/error_handler";
 
 dotenv.config();
 

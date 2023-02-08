@@ -12,21 +12,23 @@ dotenv_1.default.config();
 const db = db_1.default.Connector;
 const { clientTable } = db_1.default.Tables;
 const tokenSecret = process.env.TOKEN_SECRET;
-const checkTokens = async (req, res, next) => {
+const isAuthorized = async (req, res, next) => {
     try {
         const token = req.header("Authorization")?.replace("Bearer ", "");
         if (!token) {
             throw boom_1.default.unauthorized("Invalid token.");
         }
-        const decode = jsonwebtoken_1.default.verify(token, tokenSecret);
-        if (typeof decode === "string")
-            throw boom_1.default.unauthorized("Invalid token.");
-        const { clientId } = decode;
+        let decode;
+        jsonwebtoken_1.default.verify(token, tokenSecret, (err, encoded) => {
+            if (err)
+                throw boom_1.default.unauthorized("Token expired");
+            decode = encoded;
+        });
         const user = await db
             .select(clientTable)
-            .where((0, expressions_1.eq)(clientTable.clientId, clientId));
+            .where((0, expressions_1.eq)(clientTable.clientId, decode.clientId));
         if (!user.length)
-            throw boom_1.default.unauthorized("Invalid token");
+            throw boom_1.default.unauthorized("Invalid token.");
         req.body.decode = decode;
         next();
     }
@@ -34,4 +36,4 @@ const checkTokens = async (req, res, next) => {
         next(err);
     }
 };
-exports.default = checkTokens;
+exports.default = isAuthorized;

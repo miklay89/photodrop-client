@@ -7,35 +7,50 @@ exports.checkCookies = exports.checkVerifyOtpBody = exports.checkSendOtpBody = v
 const joi_1 = __importDefault(require("joi"));
 const boom_1 = __importDefault(require("@hapi/boom"));
 const checkSendOtpBody = (req, res, next) => {
-    const schema = joi_1.default.object({
-        phoneNumber: joi_1.default.number().required(),
-        countryCode: joi_1.default.number().required(),
-    });
-    const value = schema.validate(req.body);
-    if (value.error?.message)
-        throw boom_1.default.badData(value.error?.message);
-    next();
+    try {
+        const schema = joi_1.default.object({
+            phoneNumber: joi_1.default.number().required(),
+            countryCode: joi_1.default.number().required(),
+        });
+        const value = schema.validate(req.body);
+        if (value.error?.message)
+            throw boom_1.default.badData(value.error?.message);
+        next();
+    }
+    catch (err) {
+        next(err);
+    }
 };
 exports.checkSendOtpBody = checkSendOtpBody;
 const checkVerifyOtpBody = (req, res, next) => {
-    const schema = joi_1.default.object({
-        phoneNumber: joi_1.default.number().required(),
-        countryCode: joi_1.default.number().required(),
-        otp: joi_1.default.number().required(),
-    });
-    const value = schema.validate(req.body);
-    if (value.error?.message)
-        throw boom_1.default.badData(value.error?.message);
-    next();
+    try {
+        const schema = joi_1.default.object({
+            phoneNumber: joi_1.default.number().required(),
+            countryCode: joi_1.default.number().required(),
+            otp: joi_1.default.number().required(),
+        });
+        const value = schema.validate(req.body);
+        if (value.error?.message)
+            throw boom_1.default.badData(value.error?.message);
+        next();
+    }
+    catch (err) {
+        next(err);
+    }
 };
 exports.checkVerifyOtpBody = checkVerifyOtpBody;
 const checkCookies = (req, res, next) => {
-    const schema = joi_1.default.object({
-        refreshToken: joi_1.default.string().required(),
-    });
-    const value = schema.validate(req.cookies);
-    if (value.error?.message)
-        throw boom_1.default.badData(value.error?.message);
-    next();
+    try {
+        const schema = joi_1.default.object({
+            refreshToken: joi_1.default.string().required(),
+        });
+        const value = schema.validate(req.cookies);
+        if (value.error?.message)
+            throw boom_1.default.badData(value.error?.message);
+        next();
+    }
+    catch (err) {
+        next(err);
+    }
 };
 exports.checkCookies = checkCookies;

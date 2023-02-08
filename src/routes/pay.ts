@@ -1,10 +1,10 @@
 import Router from "express";
 import PayController from "../controllers/pay/pay";
-import checkToken from "../middlewares/check_token";
+import isAuthorized from "../middlewares/is_authorized";
 
 const router = Router();
 
 // pay for user album
-router.post("/album", checkToken, PayController.payForAlbum);
+router.post("/album", isAuthorized, PayController.payForAlbum);
 
 export default router;

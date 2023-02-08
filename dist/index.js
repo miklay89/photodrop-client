@@ -11,7 +11,7 @@ const auth_1 = __importDefault(require("./routes/auth"));
 const dashboard_1 = __importDefault(require("./routes/dashboard"));
 const user_1 = __importDefault(require("./routes/user"));
 const pay_1 = __importDefault(require("./routes/pay"));
-const error_handler_1 = __importDefault(require("./libs/error_handler"));
+const error_handler_1 = __importDefault(require("./utils/error_handler"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());

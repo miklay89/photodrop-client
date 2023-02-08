@@ -1,6 +1,6 @@
 import Router from "express";
 import AuthController from "../controllers/auth/auth";
-import checkToken from "../middlewares/check_token";
+import isAuthorized from "../middlewares/is_authorized";
 import {
   checkSendOtpBody,
   checkVerifyOtpBody,
@@ -20,6 +20,6 @@ router.post(
 // refresh token
 router.post("/refresh", checkCookies, AuthController.refresh);
 // TODO - delete on prod (me - check access)
-router.get("/me", checkToken, AuthController.me);
+router.get("/me", isAuthorized, AuthController.me);
 
 export default router;

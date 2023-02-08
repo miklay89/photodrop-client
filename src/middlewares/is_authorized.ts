@@ -12,7 +12,7 @@ const { clientTable } = dbObject.Tables;
 
 const tokenSecret = process.env.TOKEN_SECRET as string;
 
-const checkTokens: RequestHandler = async (req, res, next): Promise<void> => {
+const isAuthorized: RequestHandler = async (req, res, next): Promise<void> => {
   try {
     const token = req.header("Authorization")?.replace("Bearer ", "");
 
@@ -20,17 +20,18 @@ const checkTokens: RequestHandler = async (req, res, next): Promise<void> => {
       throw Boom.unauthorized("Invalid token.");
     }
 
-    const decode = jwt.verify(token, tokenSecret);
+    let decode;
 
-    if (typeof decode === "string") throw Boom.unauthorized("Invalid token.");
-
-    const { clientId } = decode;
+    jwt.verify(token, tokenSecret, (err, encoded) => {
+      if (err) throw Boom.unauthorized("Token expired");
+      decode = encoded;
+    });
 
     const user = await db
       .select(clientTable)
-      .where(eq(clientTable.clientId, clientId));
+      .where(eq(clientTable.clientId, (decode as any).clientId));
 
-    if (!user.length) throw Boom.unauthorized("Invalid token");
+    if (!user.length) throw Boom.unauthorized("Invalid token.");
 
     req.body.decode = decode;
     next();
@@ -39,4 +40,4 @@ const checkTokens: RequestHandler = async (req, res, next): Promise<void> => {
   }
 };
 
-export default checkTokens;
+export default isAuthorized;

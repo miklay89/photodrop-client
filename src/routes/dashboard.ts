@@ -1,12 +1,12 @@
 import Router from "express";
 import DashboardController from "../controllers/dashboard/dashboard";
-import checkToken from "../middlewares/check_token";
+import isAuthorized from "../middlewares/is_authorized";
 
 const router = Router();
 
 // get all users albums
-router.get("/get-all", checkToken, DashboardController.getAllAlbums);
+router.get("/get-all", isAuthorized, DashboardController.getAllAlbums);
 // get album by album id
-router.get("/album/:id", checkToken, DashboardController.getAlbumById);
+router.get("/album/:id", isAuthorized, DashboardController.getAlbumById);
 
 export default router;
