@@ -1,5 +1,3 @@
-Dockerfile
-.dockerignore
 migrations-folder
 node_modules
 .env
