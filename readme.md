@@ -26,11 +26,27 @@
 ### [GET] /auth/me
 #### body: none
 #### headers: ["authorization"]: access_token
-- check access token expiration
+- you will gain user information in response.body
 #
 ### [POST] /user/upload-selfie
 #### body: MULTIPART FORM DATA
 #### FIELDS: shiftX (integer, required), shiftY (integer, required), zoom (integer, required), width (integer, required), height (integer, required), files: file (Buffer, required)
 #### headers: ["authorization"]: access_token
 - uploads selfie to s3 + adds records in tables and return user info with selfie
+#
+### [POST] /user/update-name
+#### body: JSON
+{
+	"fullName": "Mhari Isuzi", // required - only string
+}
+#### headers: ["authorization"]: access_token
+- updates user full name and return updated user info with selfie
+#
+### [POST] /user/update-email
+#### body: JSON
+{
+	"email": "mhari_isuzi@test.com", // required - only email
+}
+#### headers: ["authorization"]: access_token
+- updates user email and return updated user info with selfie
 #

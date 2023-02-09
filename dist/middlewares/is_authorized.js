@@ -29,7 +29,6 @@ const isAuthorized = async (req, res, next) => {
             .where((0, expressions_1.eq)(clientTable.clientId, decode.clientId));
         if (!user.length)
             throw boom_1.default.unauthorized("Invalid token.");
-        req.body.decode = decode;
         next();
     }
     catch (err) {

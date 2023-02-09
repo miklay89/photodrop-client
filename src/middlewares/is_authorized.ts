@@ -33,7 +33,6 @@ const isAuthorized: RequestHandler = async (req, res, next): Promise<void> => {
 
     if (!user.length) throw Boom.unauthorized("Invalid token.");
 
-    req.body.decode = decode;
     next();
   } catch (err) {
     next(err);

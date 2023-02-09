@@ -1,34 +1,31 @@
 import Router from "express";
 import isAuthorized from "../middlewares/is_authorized";
-import {
-  checkUpdateEmailBody,
-  checkUpdateNameBody,
-  checkUploadSelfieBody,
-} from "../validators/user_validators";
+import UserValidator from "../validators/user_validators";
 import upload from "../libs/multer";
 import UserController from "../controllers/user/user";
 
+// upload selfie
 const router = Router();
 // upload selfie
 router.post(
   "/upload-selfie",
   isAuthorized,
   upload.single("files"),
-  checkUploadSelfieBody,
+  UserValidator.checkUploadSelfieBody,
   UserController.uploadSelfie,
 );
 // update name
 router.put(
   "/update-name",
   isAuthorized,
-  checkUpdateNameBody,
+  UserValidator.checkUpdateFullNameBody,
   UserController.updateUserName,
 );
 // update email
 router.put(
   "/update-email",
   isAuthorized,
-  checkUpdateEmailBody,
+  UserValidator.checkUpdateEmailBody,
   UserController.updateUserEmail,
 );
 

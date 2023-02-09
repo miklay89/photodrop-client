@@ -86,16 +86,7 @@ export const clientAlbumsTable = pgTable("pdc_albums", {
   clientId: text("client_id")
     .notNull()
     .references(() => clientTable.clientId), // ref to client id
-});
-
-export const clientPhotosTable = pgTable("pdc_photos", {
-  albumId: text("album_id")
-    .notNull()
-    .references(() => clientAlbumsTable.albumId), // ref to client id
-  photoId: text("photo_id")
-    .notNull()
-    .references(() => photosTable.photoId), // ref to photo id
-  isUnlocked: boolean("is_unlocked").notNull().default(false), // photo status
+  isUnlocked: boolean("is_unlocked").notNull().default(false), // album status
 });
 
 export const clientPaymentsTable = pgTable("pdc_payments", {

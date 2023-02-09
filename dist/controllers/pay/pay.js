@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-class Pay {
+class PayController {
     constructor() {
         this.payForAlbum = async (req, res, next) => {
             try {
@@ -17,4 +17,4 @@ class Pay {
         };
     }
 }
-exports.default = new Pay();
+exports.default = new PayController();

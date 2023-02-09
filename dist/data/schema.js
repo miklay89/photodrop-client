@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.clientPaymentsTable = exports.clientPhotosTable = exports.clientAlbumsTable = exports.clientSessionsTable = exports.clientTable = exports.clientSelfiesTable = exports.photosTable = exports.albumsTable = exports.sessionsTable = exports.usersTable = void 0;
+exports.clientPaymentsTable = exports.clientAlbumsTable = exports.clientSessionsTable = exports.clientTable = exports.clientSelfiesTable = exports.photosTable = exports.albumsTable = exports.sessionsTable = exports.usersTable = void 0;
 const drizzle_orm_pg_1 = require("drizzle-orm-pg");
 exports.usersTable = (0, drizzle_orm_pg_1.pgTable)("pd_users", {
     login: (0, drizzle_orm_pg_1.text)("login").notNull(),
@@ -73,14 +73,6 @@ exports.clientAlbumsTable = (0, drizzle_orm_pg_1.pgTable)("pdc_albums", {
     clientId: (0, drizzle_orm_pg_1.text)("client_id")
         .notNull()
         .references(() => exports.clientTable.clientId),
-});
-exports.clientPhotosTable = (0, drizzle_orm_pg_1.pgTable)("pdc_photos", {
-    albumId: (0, drizzle_orm_pg_1.text)("album_id")
-        .notNull()
-        .references(() => exports.clientAlbumsTable.albumId),
-    photoId: (0, drizzle_orm_pg_1.text)("photo_id")
-        .notNull()
-        .references(() => exports.photosTable.photoId),
     isUnlocked: (0, drizzle_orm_pg_1.boolean)("is_unlocked").notNull().default(false),
 });
 exports.clientPaymentsTable = (0, drizzle_orm_pg_1.pgTable)("pdc_payments", {

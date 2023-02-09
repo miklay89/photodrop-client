@@ -7,6 +7,7 @@ import { Twilio } from "twilio";
 import { eq } from "drizzle-orm/expressions";
 import dbObject from "../../data/db";
 import createTokens from "../../libs/jwt_generator";
+import getClientIdFromToken from "../../libs/get_client_id_from_token";
 
 dotenv.config();
 // TWILIO
@@ -20,7 +21,7 @@ const db = dbObject.Connector;
 const { clientTable, clientSessionsTable, clientSelfiesTable } =
   dbObject.Tables;
 
-class Auth {
+class AuthController {
   public sendOtp: RequestHandler = async (req, res, next) => {
     const countryCode = req.body.countryCode as string;
     const phoneNumber = req.body.phoneNumber as string;
@@ -200,9 +201,23 @@ class Auth {
     return null;
   };
 
-  public me: RequestHandler = (req, res, next) => {
+  public me: RequestHandler = async (req, res, next) => {
+    const clientId = getClientIdFromToken(
+      req.header("Authorization")?.replace("Bearer ", "")!,
+    );
     try {
-      return res.json({ message: "ok" });
+      const user = await db
+        .select(clientTable)
+        .leftJoin(
+          clientSelfiesTable,
+          eq(clientTable.selfieId, clientSelfiesTable.selfieId),
+        )
+        .where(eq(clientTable.clientId, clientId));
+
+      return res.json({
+        user: user[0].pdc_client,
+        selfie: user[0].pdc_selfies,
+      });
     } catch (e) {
       next(e);
     }
@@ -210,4 +225,4 @@ class Auth {
   };
 }
 
-export default new Auth();
+export default new AuthController();

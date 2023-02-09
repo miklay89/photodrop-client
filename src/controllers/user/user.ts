@@ -15,7 +15,7 @@ dotenv.config();
 const db = dbObject.Connector;
 const { clientSelfiesTable, clientTable } = dbObject.Tables;
 
-class User {
+class UserController {
   public uploadSelfie: RequestHandler = async (req, res, next) => {
     // get clientId from headers
     const clientId = getClientIdFromToken(
@@ -65,6 +65,10 @@ class User {
         );
 
       // res to user
+      // TODO delete
+      console.log("user", JSON.stringify(updatedUser[0].pdc_client));
+      console.log("selfie", JSON.stringify(updatedUser[0].pdc_selfies));
+
       return res.status(200).json({
         user: updatedUser[0].pdc_client,
         selfie: updatedUser[0].pdc_selfies,
@@ -76,22 +80,70 @@ class User {
   };
 
   public updateUserName: RequestHandler = async (req, res, next) => {
-    // TODO
+    // get clientId from headers
+    const clientId = getClientIdFromToken(
+      req.header("Authorization")?.replace("Bearer ", "")!,
+    );
+    const { fullName } = req.body;
+
     try {
-      res.status(200).json({ message: "update user name" });
+      // save user name
+      await db
+        .update(clientTable)
+        // eslint-disable-next-line object-shorthand
+        .set({ fullName: fullName as string })
+        .where(eq(clientTable.clientId, clientId));
+
+      const updatedUser = await db
+        .select(clientTable)
+        .leftJoin(
+          clientSelfiesTable,
+          eq(clientTable.selfieId, clientSelfiesTable.selfieId),
+        )
+        .where(eq(clientTable.clientId, clientId));
+
+      res.status(200).json({
+        user: updatedUser[0].pdc_client,
+        selfie: updatedUser[0].pdc_selfies,
+      });
     } catch (e) {
       next(e);
     }
+    return null;
   };
 
   public updateUserEmail: RequestHandler = async (req, res, next) => {
-    // TODO
+    // get clientId from headers
+    const clientId = getClientIdFromToken(
+      req.header("Authorization")?.replace("Bearer ", "")!,
+    );
+    const { email } = req.body;
+
     try {
-      res.status(200).json({ message: "update user email" });
+      // save user name
+      await db
+        .update(clientTable)
+        // eslint-disable-next-line object-shorthand
+        .set({ email: email as string })
+        .where(eq(clientTable.clientId, clientId));
+
+      const updatedUser = await db
+        .select(clientTable)
+        .leftJoin(
+          clientSelfiesTable,
+          eq(clientTable.selfieId, clientSelfiesTable.selfieId),
+        )
+        .where(eq(clientTable.clientId, clientId));
+
+      res.status(200).json({
+        user: updatedUser[0].pdc_client,
+        selfie: updatedUser[0].pdc_selfies,
+      });
     } catch (e) {
       next(e);
     }
+    return null;
   };
 }
 
-export default new User();
+export default new UserController();

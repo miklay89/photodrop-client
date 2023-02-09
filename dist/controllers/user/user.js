@@ -13,7 +13,7 @@ const get_client_id_from_token_1 = __importDefault(require("../../libs/get_clien
 dotenv_1.default.config();
 const db = db_1.default.Connector;
 const { clientSelfiesTable, clientTable } = db_1.default.Tables;
-class User {
+class UserController {
     constructor() {
         this.uploadSelfie = async (req, res, next) => {
             const clientId = (0, get_client_id_from_token_1.default)(req.header("Authorization")?.replace("Bearer ", ""));
@@ -47,6 +47,8 @@ class User {
                 const updatedUser = await db
                     .select(clientTable)
                     .leftJoin(clientSelfiesTable, (0, expressions_1.eq)(clientTable.selfieId, clientSelfiesTable.selfieId));
+                console.log("user", JSON.stringify(updatedUser[0].pdc_client));
+                console.log("selfie", JSON.stringify(updatedUser[0].pdc_selfies));
                 return res.status(200).json({
                     user: updatedUser[0].pdc_client,
                     selfie: updatedUser[0].pdc_selfies,
@@ -58,21 +60,49 @@ class User {
             return null;
         };
         this.updateUserName = async (req, res, next) => {
+            const clientId = (0, get_client_id_from_token_1.default)(req.header("Authorization")?.replace("Bearer ", ""));
+            const { fullName } = req.body;
             try {
-                res.status(200).json({ message: "update user name" });
+                await db
+                    .update(clientTable)
+                    .set({ fullName: fullName })
+                    .where((0, expressions_1.eq)(clientTable.clientId, clientId));
+                const updatedUser = await db
+                    .select(clientTable)
+                    .leftJoin(clientSelfiesTable, (0, expressions_1.eq)(clientTable.selfieId, clientSelfiesTable.selfieId))
+                    .where((0, expressions_1.eq)(clientTable.clientId, clientId));
+                res.status(200).json({
+                    user: updatedUser[0].pdc_client,
+                    selfie: updatedUser[0].pdc_selfies,
+                });
             }
             catch (e) {
                 next(e);
             }
+            return null;
         };
         this.updateUserEmail = async (req, res, next) => {
+            const clientId = (0, get_client_id_from_token_1.default)(req.header("Authorization")?.replace("Bearer ", ""));
+            const { email } = req.body;
             try {
-                res.status(200).json({ message: "update user email" });
+                await db
+                    .update(clientTable)
+                    .set({ email: email })
+                    .where((0, expressions_1.eq)(clientTable.clientId, clientId));
+                const updatedUser = await db
+                    .select(clientTable)
+                    .leftJoin(clientSelfiesTable, (0, expressions_1.eq)(clientTable.selfieId, clientSelfiesTable.selfieId))
+                    .where((0, expressions_1.eq)(clientTable.clientId, clientId));
+                res.status(200).json({
+                    user: updatedUser[0].pdc_client,
+                    selfie: updatedUser[0].pdc_selfies,
+                });
             }
             catch (e) {
                 next(e);
             }
+            return null;
         };
     }
 }
-exports.default = new User();
+exports.default = new UserController();

@@ -10,6 +10,7 @@ const twilio_1 = require("twilio");
 const expressions_1 = require("drizzle-orm/expressions");
 const db_1 = __importDefault(require("../../data/db"));
 const jwt_generator_1 = __importDefault(require("../../libs/jwt_generator"));
+const get_client_id_from_token_1 = __importDefault(require("../../libs/get_client_id_from_token"));
 dotenv_1.default.config();
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -17,7 +18,7 @@ const serviceSid = process.env.TWILIO_SERVICE_SID;
 const client = new twilio_1.Twilio(accountSid, authToken);
 const db = db_1.default.Connector;
 const { clientTable, clientSessionsTable, clientSelfiesTable } = db_1.default.Tables;
-class Auth {
+class AuthController {
     constructor() {
         this.sendOtp = async (req, res, next) => {
             const countryCode = req.body.countryCode;
@@ -153,9 +154,17 @@ class Auth {
             }
             return null;
         };
-        this.me = (req, res, next) => {
+        this.me = async (req, res, next) => {
+            const clientId = (0, get_client_id_from_token_1.default)(req.header("Authorization")?.replace("Bearer ", ""));
             try {
-                return res.json({ message: "ok" });
+                const user = await db
+                    .select(clientTable)
+                    .leftJoin(clientSelfiesTable, (0, expressions_1.eq)(clientTable.selfieId, clientSelfiesTable.selfieId))
+                    .where((0, expressions_1.eq)(clientTable.clientId, clientId));
+                return res.json({
+                    user: user[0].pdc_client,
+                    selfie: user[0].pdc_selfies,
+                });
             }
             catch (e) {
                 next(e);
@@ -164,4 +173,4 @@ class Auth {
         };
     }
 }
-exports.default = new Auth();
+exports.default = new AuthController();

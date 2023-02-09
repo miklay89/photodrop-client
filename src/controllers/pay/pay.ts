@@ -13,7 +13,7 @@ dotenv.config();
 // const { clientTable, clientSessionsTable, clientSelfiesTable } =
 //   dbObject.Tables;
 
-class Pay {
+class PayController {
   public payForAlbum: RequestHandler = async (req, res, next) => {
     try {
       // TODO
@@ -25,4 +25,4 @@ class Pay {
   };
 }
 
-export default new Pay();
+export default new PayController();
