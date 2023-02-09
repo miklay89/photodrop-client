@@ -32,7 +32,6 @@ class UserController {
       if (selfie.originalname.split(".").pop()?.toLowerCase() === "heic") {
         file = await convertToPng(file);
         extName = "png";
-        console.log("file converted to png");
       }
 
       const newSelfie = {
@@ -46,15 +45,12 @@ class UserController {
       };
 
       // save selfie in DB
-      const storedSelfie = await db
-        .insert(clientSelfiesTable)
-        .values(newSelfie)
-        .returning();
+      await db.insert(clientSelfiesTable).values(newSelfie);
 
       // update user info in db
       await db
         .update(clientTable)
-        .set({ selfieId: storedSelfie[0].selfieId })
+        .set({ selfieId: newSelfie.selfieId })
         .where(eq(clientTable.clientId, clientId));
 
       const updatedUser = await db
@@ -62,13 +58,10 @@ class UserController {
         .leftJoin(
           clientSelfiesTable,
           eq(clientTable.selfieId, clientSelfiesTable.selfieId),
-        );
+        )
+        .where(eq(clientTable.clientId, clientId));
 
       // res to user
-      // TODO delete
-      console.log("user", JSON.stringify(updatedUser[0].pdc_client));
-      console.log("selfie", JSON.stringify(updatedUser[0].pdc_selfies));
-
       return res.status(200).json({
         user: updatedUser[0].pdc_client,
         selfie: updatedUser[0].pdc_selfies,

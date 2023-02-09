@@ -25,7 +25,6 @@ class UserController {
                 if (selfie.originalname.split(".").pop()?.toLowerCase() === "heic") {
                     file = await (0, convert_to_png_1.default)(file);
                     extName = "png";
-                    console.log("file converted to png");
                 }
                 const newSelfie = {
                     selfieId: (0, uuid_1.v4)(),
@@ -36,19 +35,15 @@ class UserController {
                     width: +width || 0,
                     height: +height || 0,
                 };
-                const storedSelfie = await db
-                    .insert(clientSelfiesTable)
-                    .values(newSelfie)
-                    .returning();
+                await db.insert(clientSelfiesTable).values(newSelfie);
                 await db
                     .update(clientTable)
-                    .set({ selfieId: storedSelfie[0].selfieId })
+                    .set({ selfieId: newSelfie.selfieId })
                     .where((0, expressions_1.eq)(clientTable.clientId, clientId));
                 const updatedUser = await db
                     .select(clientTable)
-                    .leftJoin(clientSelfiesTable, (0, expressions_1.eq)(clientTable.selfieId, clientSelfiesTable.selfieId));
-                console.log("user", JSON.stringify(updatedUser[0].pdc_client));
-                console.log("selfie", JSON.stringify(updatedUser[0].pdc_selfies));
+                    .leftJoin(clientSelfiesTable, (0, expressions_1.eq)(clientTable.selfieId, clientSelfiesTable.selfieId))
+                    .where((0, expressions_1.eq)(clientTable.clientId, clientId));
                 return res.status(200).json({
                     user: updatedUser[0].pdc_client,
                     selfie: updatedUser[0].pdc_selfies,

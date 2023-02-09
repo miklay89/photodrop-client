@@ -37,8 +37,6 @@ class UserValidator {
         };
         this.checkUploadSelfieBody = (req, res, next) => {
             try {
-                console.log("validator body", req.body);
-                console.log("validator file", req.file);
                 const bodySchema = joi_1.default.object({
                     shiftX: joi_1.default.number().required(),
                     shiftY: joi_1.default.number().required(),
