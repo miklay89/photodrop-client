@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable class-methods-use-this */
 import { RequestHandler } from "express";
+import Boom from "@hapi/boom";
 import dotenv from "dotenv";
 import { and, eq, like } from "drizzle-orm/expressions";
 import getClientIdFromToken from "../../libs/get_client_id_from_token";
@@ -73,6 +74,7 @@ class DashboardController {
           ),
         )
         .then((query) => {
+          if (!query.length) throw Boom.notFound();
           const uniqAlbumsIds = [...new Set(query.map((q) => q.albumId))];
           const photos = query.map((q) => q.photos);
           // eslint-disable-next-line array-callback-return
@@ -163,6 +165,7 @@ class DashboardController {
           ),
         )
         .then((query) => {
+          if (!query.length) throw Boom.notFound();
           const uniqAlbumsIds = [...new Set(query.map((q) => q.albumId))];
           const photos = query.map((q) => q.photos);
           // eslint-disable-next-line array-callback-return

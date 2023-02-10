@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const boom_1 = __importDefault(require("@hapi/boom"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const expressions_1 = require("drizzle-orm/expressions");
 const get_client_id_from_token_1 = __importDefault(require("../../libs/get_client_id_from_token"));
@@ -48,6 +49,8 @@ class DashboardController {
                     .innerJoin(albumsTable, (0, expressions_1.eq)(albumsTable.albumId, clientAlbumsTable.albumId))
                     .where((0, expressions_1.and)((0, expressions_1.eq)(clientAlbumsTable.clientId, clientId), (0, expressions_1.like)(photosTable.clients, phone)))
                     .then((query) => {
+                    if (!query.length)
+                        throw boom_1.default.notFound();
                     const uniqAlbumsIds = [...new Set(query.map((q) => q.albumId))];
                     const photos = query.map((q) => q.photos);
                     uniqAlbumsIds.map((uaid) => {
@@ -119,6 +122,8 @@ class DashboardController {
                     .innerJoin(albumsTable, (0, expressions_1.eq)(albumsTable.albumId, clientAlbumsTable.albumId))
                     .where((0, expressions_1.and)((0, expressions_1.eq)(clientAlbumsTable.clientId, clientId), (0, expressions_1.like)(photosTable.clients, phone), (0, expressions_1.eq)(albumsTable.albumId, albumId)))
                     .then((query) => {
+                    if (!query.length)
+                        throw boom_1.default.notFound();
                     const uniqAlbumsIds = [...new Set(query.map((q) => q.albumId))];
                     const photos = query.map((q) => q.photos);
                     uniqAlbumsIds.map((uaid) => {
