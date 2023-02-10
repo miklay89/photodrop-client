@@ -99,8 +99,6 @@ class DashboardController {
         this.getAlbumById = async (req, res, next) => {
             const clientId = (0, get_client_id_from_token_1.default)(req.header("Authorization")?.replace("Bearer ", ""));
             const { albumId } = req.params;
-            console.log(clientId);
-            console.log(albumId);
             try {
                 const user = await db
                     .select(clientTable)

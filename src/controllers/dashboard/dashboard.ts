@@ -1,8 +1,6 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable class-methods-use-this */
 import { RequestHandler } from "express";
-// import Boom from "@hapi/boom";
-// import { v4 as uuid } from "uuid";
 import dotenv from "dotenv";
 import { and, eq, like } from "drizzle-orm/expressions";
 import getClientIdFromToken from "../../libs/get_client_id_from_token";
@@ -129,8 +127,7 @@ class DashboardController {
       req.header("Authorization")?.replace("Bearer ", "")!,
     );
     const { albumId } = req.params;
-    console.log(clientId);
-    console.log(albumId);
+
     try {
       // get user info + phone
       const user = await db

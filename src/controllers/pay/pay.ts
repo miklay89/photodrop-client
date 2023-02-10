@@ -17,9 +17,12 @@ class PayController {
   public payForAlbum: RequestHandler = async (req, res, next) => {
     // user id from header
     // album id from body
+    // create payment link
+    // store payment in DB
+    // update albums table if all ok
     try {
       // TODO
-      // use sprite
+      // use stripe
       res.status(200).json({ message: "pay for album" });
     } catch (e) {
       next(e);
