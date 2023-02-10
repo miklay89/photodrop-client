@@ -15,6 +15,8 @@ dotenv.config();
 
 class PayController {
   public payForAlbum: RequestHandler = async (req, res, next) => {
+    // user id from header
+    // album id from body
     try {
       // TODO
       // use sprite

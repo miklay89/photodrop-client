@@ -50,3 +50,13 @@
 #### headers: ["authorization"]: access_token
 - updates user email and return updated user info with selfie
 #
+### [GET] /dashboard/get-all
+#### body: none
+#### headers: ["authorization"]: access_token
+- returns to user information of all of his albums + photos
+#
+### [GET] /dashboard/album/${albumId}
+#### body: none
+#### headers: ["authorization"]: access_token
+- returns to user information of one album by album id
+#
