@@ -79,10 +79,7 @@ export const clientSessionsTable = pgTable("pdc_sessions", {
 });
 
 export const clientAlbumsTable = pgTable("pdc_albums", {
-  albumId: text("album_id")
-    .notNull()
-    .primaryKey()
-    .references(() => albumsTable.albumId), // album id
+  albumId: text("album_id").notNull(),
   clientId: text("client_id")
     .notNull()
     .references(() => clientTable.clientId), // ref to client id
@@ -95,8 +92,6 @@ export const clientPaymentsTable = pgTable("pdc_payments", {
     .notNull()
     .references(() => clientTable.clientId), // ref to client id
   createdAt: timestamp("created_at").notNull().defaultNow(), // date of creation
-  albumId: text("album_id")
-    .notNull()
-    .references(() => clientAlbumsTable.albumId), // ref to album id
+  albumId: text("album_id").notNull(), // album id
   status: boolean("status").notNull().default(false), // payment status
 });

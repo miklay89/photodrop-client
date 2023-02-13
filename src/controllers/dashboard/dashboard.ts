@@ -28,25 +28,40 @@ class DashboardController {
       const user = await db
         .select(clientTable)
         .where(eq(clientTable.clientId, clientId));
-      const { phone } = user[0];
+      let { phone } = user[0];
+      if (phone[0] === "+") phone = phone.slice(1);
       // get all users photo + albums
       await db
         .select(photosTable)
+        .fields({
+          albumId: albumsTable.albumId,
+        })
         .innerJoin(albumsTable, eq(photosTable.albumId, albumsTable.albumId))
-        .where(like(photosTable.clients, phone))
+        .where(like(photosTable.clients, `%${phone}%`))
         .then(async (query) => {
           if (!query.length) return;
           // insert users data to another table
           const insertData: Array<{ albumId: string; clientId: string }> = [];
           // creating albums data for client users and store to DB
-          [...new Set(query.map((q) => q.pd_albums.albumId))].forEach((e) => {
+          [...new Set(query.map((q) => q.albumId))].forEach((e) => {
             insertData.push({ albumId: e, clientId });
           });
+          // check is this pair exist
+          insertData.forEach(async (d) => {
+            await db
+              .select(clientAlbumsTable)
+              .where(
+                and(
+                  eq(clientAlbumsTable.albumId, d.albumId),
+                  eq(clientAlbumsTable.clientId, d.clientId),
+                ),
+              )
+              .then(async (q) => {
+                if (q.length) return;
+                await db.insert(clientAlbumsTable).values(d);
+              });
+          });
           // save albums data in db
-          await db
-            .insert(clientAlbumsTable)
-            .values(...insertData)
-            .onConflictDoNothing();
         });
 
       // get data for response
@@ -72,7 +87,7 @@ class DashboardController {
         .where(
           and(
             eq(clientAlbumsTable.clientId, clientId),
-            like(photosTable.clients, phone),
+            like(photosTable.clients, `%${phone}%`),
           ),
         )
         .then((query) => {
@@ -137,7 +152,9 @@ class DashboardController {
       const user = await db
         .select(clientTable)
         .where(eq(clientTable.clientId, clientId));
-      const { phone } = user[0];
+
+      let { phone } = user[0];
+      if (phone[0] === "+") phone = phone.slice(1);
 
       // get data for response
       const mapped = new Map();
@@ -162,7 +179,7 @@ class DashboardController {
         .where(
           and(
             eq(clientAlbumsTable.clientId, clientId),
-            like(photosTable.clients, phone),
+            like(photosTable.clients, `%${phone}%`),
             eq(albumsTable.albumId, albumId),
           ),
         )

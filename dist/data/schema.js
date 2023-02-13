@@ -66,10 +66,7 @@ exports.clientSessionsTable = (0, drizzle_orm_pg_1.pgTable)("pdc_sessions", {
     expiresIn: (0, drizzle_orm_pg_1.timestamp)("expires_in").notNull(),
 });
 exports.clientAlbumsTable = (0, drizzle_orm_pg_1.pgTable)("pdc_albums", {
-    albumId: (0, drizzle_orm_pg_1.text)("album_id")
-        .notNull()
-        .primaryKey()
-        .references(() => exports.albumsTable.albumId),
+    albumId: (0, drizzle_orm_pg_1.text)("album_id").notNull(),
     clientId: (0, drizzle_orm_pg_1.text)("client_id")
         .notNull()
         .references(() => exports.clientTable.clientId),
@@ -81,8 +78,6 @@ exports.clientPaymentsTable = (0, drizzle_orm_pg_1.pgTable)("pdc_payments", {
         .notNull()
         .references(() => exports.clientTable.clientId),
     createdAt: (0, drizzle_orm_pg_1.timestamp)("created_at").notNull().defaultNow(),
-    albumId: (0, drizzle_orm_pg_1.text)("album_id")
-        .notNull()
-        .references(() => exports.clientAlbumsTable.albumId),
+    albumId: (0, drizzle_orm_pg_1.text)("album_id").notNull(),
     status: (0, drizzle_orm_pg_1.boolean)("status").notNull().default(false),
 });

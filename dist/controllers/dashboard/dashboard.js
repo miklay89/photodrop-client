@@ -19,22 +19,33 @@ class DashboardController {
                 const user = await db
                     .select(clientTable)
                     .where((0, expressions_1.eq)(clientTable.clientId, clientId));
-                const { phone } = user[0];
+                let { phone } = user[0];
+                if (phone[0] === "+")
+                    phone = phone.slice(1);
                 await db
                     .select(photosTable)
+                    .fields({
+                    albumId: albumsTable.albumId,
+                })
                     .innerJoin(albumsTable, (0, expressions_1.eq)(photosTable.albumId, albumsTable.albumId))
-                    .where((0, expressions_1.like)(photosTable.clients, phone))
+                    .where((0, expressions_1.like)(photosTable.clients, `%${phone}%`))
                     .then(async (query) => {
                     if (!query.length)
                         return;
                     const insertData = [];
-                    [...new Set(query.map((q) => q.pd_albums.albumId))].forEach((e) => {
+                    [...new Set(query.map((q) => q.albumId))].forEach((e) => {
                         insertData.push({ albumId: e, clientId });
                     });
-                    await db
-                        .insert(clientAlbumsTable)
-                        .values(...insertData)
-                        .onConflictDoNothing();
+                    insertData.forEach(async (d) => {
+                        await db
+                            .select(clientAlbumsTable)
+                            .where((0, expressions_1.and)((0, expressions_1.eq)(clientAlbumsTable.albumId, d.albumId), (0, expressions_1.eq)(clientAlbumsTable.clientId, d.clientId)))
+                            .then(async (q) => {
+                            if (q.length)
+                                return;
+                            await db.insert(clientAlbumsTable).values(d);
+                        });
+                    });
                 });
                 const mapped = new Map();
                 await db
@@ -49,7 +60,7 @@ class DashboardController {
                 })
                     .innerJoin(photosTable, (0, expressions_1.eq)(photosTable.albumId, clientAlbumsTable.albumId))
                     .innerJoin(albumsTable, (0, expressions_1.eq)(albumsTable.albumId, clientAlbumsTable.albumId))
-                    .where((0, expressions_1.and)((0, expressions_1.eq)(clientAlbumsTable.clientId, clientId), (0, expressions_1.like)(photosTable.clients, phone)))
+                    .where((0, expressions_1.and)((0, expressions_1.eq)(clientAlbumsTable.clientId, clientId), (0, expressions_1.like)(photosTable.clients, `%${phone}%`)))
                     .then((query) => {
                     if (!query.length)
                         throw boom_1.default.notFound();
@@ -108,7 +119,9 @@ class DashboardController {
                 const user = await db
                     .select(clientTable)
                     .where((0, expressions_1.eq)(clientTable.clientId, clientId));
-                const { phone } = user[0];
+                let { phone } = user[0];
+                if (phone[0] === "+")
+                    phone = phone.slice(1);
                 const mapped = new Map();
                 await db
                     .select(clientAlbumsTable)
@@ -122,7 +135,7 @@ class DashboardController {
                 })
                     .innerJoin(photosTable, (0, expressions_1.eq)(photosTable.albumId, clientAlbumsTable.albumId))
                     .innerJoin(albumsTable, (0, expressions_1.eq)(albumsTable.albumId, clientAlbumsTable.albumId))
-                    .where((0, expressions_1.and)((0, expressions_1.eq)(clientAlbumsTable.clientId, clientId), (0, expressions_1.like)(photosTable.clients, phone), (0, expressions_1.eq)(albumsTable.albumId, albumId)))
+                    .where((0, expressions_1.and)((0, expressions_1.eq)(clientAlbumsTable.clientId, clientId), (0, expressions_1.like)(photosTable.clients, `%${phone}%`), (0, expressions_1.eq)(albumsTable.albumId, albumId)))
                     .then((query) => {
                     if (!query.length)
                         throw boom_1.default.notFound();
