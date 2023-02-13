@@ -14,7 +14,17 @@ dotenv.config();
 const app = express();
 
 // cors, cookie-parser, body-parser
-app.use(cors());
+app.use(
+  cors({
+    origin: [
+      "https://photodrop-clients.vercel.app/",
+      "http://192.168.0.157:3000",
+      "http://192.168.0.157:5173",
+      `https://pd-client.onrender.com:${process.env.PORT}`,
+    ],
+    credentials: true,
+  }),
+);
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

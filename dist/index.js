@@ -14,7 +14,15 @@ const pay_1 = __importDefault(require("./routes/pay"));
 const error_handler_1 = __importDefault(require("./utils/error_handler"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
-app.use((0, cors_1.default)());
+app.use((0, cors_1.default)({
+    origin: [
+        "https://photodrop-clients.vercel.app/",
+        "http://192.168.0.157:3000",
+        "http://192.168.0.157:5173",
+        `https://pd-client.onrender.com:${process.env.PORT}`,
+    ],
+    credentials: true,
+}));
 app.use((0, cookie_parser_1.default)());
 app.use(express_1.default.urlencoded({ extended: true }));
 app.use(express_1.default.json());
