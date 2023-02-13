@@ -9,6 +9,7 @@ const expressions_1 = require("drizzle-orm/expressions");
 const db_1 = __importDefault(require("../../data/db"));
 const s3_1 = __importDefault(require("../../libs/s3"));
 const convert_to_png_1 = __importDefault(require("../../libs/convert_to_png"));
+const thumbnails_1 = __importDefault(require("../../libs/thumbnails"));
 const get_client_id_from_token_1 = __importDefault(require("../../libs/get_client_id_from_token"));
 dotenv_1.default.config();
 const db = db_1.default.Connector;
@@ -17,6 +18,7 @@ class UserController {
     constructor() {
         this.uploadSelfie = async (req, res, next) => {
             const clientId = (0, get_client_id_from_token_1.default)(req.header("Authorization")?.replace("Bearer ", ""));
+            console.log("selfie", req.body);
             const selfie = req.file;
             const { shiftX, shiftY, zoom, width, height } = req.body;
             try {
@@ -26,14 +28,16 @@ class UserController {
                     file = await (0, convert_to_png_1.default)(file);
                     extName = "png";
                 }
+                const selfieThumbnail = await (0, thumbnails_1.default)(file);
                 const newSelfie = {
                     selfieId: (0, uuid_1.v4)(),
                     selfieUrl: await (0, s3_1.default)(file, extName),
-                    shiftX: +shiftX || 0,
-                    shiftY: +shiftY || 0,
-                    zoom: +zoom || 0,
-                    width: +width || 0,
-                    height: +height || 0,
+                    selfieThumbnail: await (0, s3_1.default)(selfieThumbnail, "jpeg"),
+                    shiftX: parseFloat(shiftX) || 0,
+                    shiftY: parseFloat(shiftY) || 0,
+                    zoom: parseFloat(zoom) || 0,
+                    width: parseFloat(width) || 0,
+                    height: parseFloat(height) || 0,
                 };
                 await db.insert(clientSelfiesTable).values(newSelfie);
                 await db

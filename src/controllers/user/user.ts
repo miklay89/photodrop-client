@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm/expressions";
 import dbObject from "../../data/db";
 import uploadFileToS3 from "../../libs/s3";
 import convertToPng from "../../libs/convert_to_png";
+import thumbnail from "../../libs/thumbnails";
 import { IFile } from "./types";
 import getClientIdFromToken from "../../libs/get_client_id_from_token";
 
@@ -22,6 +23,8 @@ class UserController {
       req.header("Authorization")?.replace("Bearer ", "")!,
     );
 
+    console.log("selfie", req.body);
+
     const selfie = req.file as IFile;
     const { shiftX, shiftY, zoom, width, height } = req.body;
 
@@ -33,15 +36,17 @@ class UserController {
         file = await convertToPng(file);
         extName = "png";
       }
+      const selfieThumbnail = await thumbnail(file);
 
       const newSelfie = {
         selfieId: uuid(),
         selfieUrl: await uploadFileToS3(file, extName),
-        shiftX: +shiftX || 0,
-        shiftY: +shiftY || 0,
-        zoom: +zoom || 0,
-        width: +width || 0,
-        height: +height || 0,
+        selfieThumbnail: await uploadFileToS3(selfieThumbnail, "jpeg"),
+        shiftX: parseFloat(shiftX) || 0,
+        shiftY: parseFloat(shiftY) || 0,
+        zoom: parseFloat(zoom) || 0,
+        width: parseFloat(width) || 0,
+        height: parseFloat(height) || 0,
       };
 
       // save selfie in DB

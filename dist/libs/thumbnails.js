@@ -8,7 +8,7 @@ const thumbnail = async (file) => {
     const newFile = await (0, sharp_1.default)(file)
         .toFormat("jpeg")
         .jpeg()
-        .resize(null, 200)
+        .resize(null, 400)
         .toBuffer();
     return newFile;
 };

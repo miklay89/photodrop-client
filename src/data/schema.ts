@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, integer } from "drizzle-orm-pg";
+import { pgTable, text, timestamp, boolean, real } from "drizzle-orm-pg";
 
 /* ################################################################################ */
 // PHOTOGRAPHER API DB
@@ -52,11 +52,12 @@ export const photosTable = pgTable("pd_photos", {
 export const clientSelfiesTable = pgTable("pdc_selfies", {
   selfieId: text("selfie_id").notNull().primaryKey(), // selfie id
   selfieUrl: text("selfie_url").notNull(), // selfie url
-  shiftX: integer("shift_x"), // selfie shift x
-  shiftY: integer("shift_y"), // selfie shift y
-  zoom: integer("zoom"), // selfie zoom
-  width: integer("width"), // selfie width
-  height: integer("height"), // selfie height
+  selfieThumbnail: text("selfie_thumbnail").notNull(), // selfie thumbnail
+  shiftX: real("shift_x"), // selfie shift x
+  shiftY: real("shift_y"), // selfie shift y
+  zoom: real("zoom"), // selfie zoom
+  width: real("width"), // selfie width
+  height: real("height"), // selfie height
   createdAt: timestamp("created_at").notNull().defaultNow(), // date of creation
 });
 

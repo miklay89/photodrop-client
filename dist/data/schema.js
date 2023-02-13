@@ -42,11 +42,12 @@ exports.photosTable = (0, drizzle_orm_pg_1.pgTable)("pd_photos", {
 exports.clientSelfiesTable = (0, drizzle_orm_pg_1.pgTable)("pdc_selfies", {
     selfieId: (0, drizzle_orm_pg_1.text)("selfie_id").notNull().primaryKey(),
     selfieUrl: (0, drizzle_orm_pg_1.text)("selfie_url").notNull(),
-    shiftX: (0, drizzle_orm_pg_1.integer)("shift_x"),
-    shiftY: (0, drizzle_orm_pg_1.integer)("shift_y"),
-    zoom: (0, drizzle_orm_pg_1.integer)("zoom"),
-    width: (0, drizzle_orm_pg_1.integer)("width"),
-    height: (0, drizzle_orm_pg_1.integer)("height"),
+    selfieThumbnail: (0, drizzle_orm_pg_1.text)("selfie_thumbnail").notNull(),
+    shiftX: (0, drizzle_orm_pg_1.real)("shift_x"),
+    shiftY: (0, drizzle_orm_pg_1.real)("shift_y"),
+    zoom: (0, drizzle_orm_pg_1.real)("zoom"),
+    width: (0, drizzle_orm_pg_1.real)("width"),
+    height: (0, drizzle_orm_pg_1.real)("height"),
     createdAt: (0, drizzle_orm_pg_1.timestamp)("created_at").notNull().defaultNow(),
 });
 exports.clientTable = (0, drizzle_orm_pg_1.pgTable)("pdc_client", {
