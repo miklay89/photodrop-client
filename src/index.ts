@@ -19,7 +19,8 @@ app.use(
     origin: [
       "https://photodrop-clients.vercel.app/",
       "http://192.168.0.157:3000",
-      "http://192.168.0.157:5173",
+      "http://213.111.67.182:5173",
+      "http://localhost:5173",
       `https://pd-client.onrender.com:${process.env.PORT}`,
     ],
     credentials: true,
