@@ -20,20 +20,22 @@ class DashboardController {
                     .select(clientTable)
                     .where((0, expressions_1.eq)(clientTable.clientId, clientId));
                 const { phone } = user[0];
-                const allPhotosAndAlbumsByPhone = await db
+                await db
                     .select(photosTable)
                     .innerJoin(albumsTable, (0, expressions_1.eq)(photosTable.albumId, albumsTable.albumId))
-                    .where((0, expressions_1.like)(photosTable.clients, phone));
-                const insertData = [];
-                [
-                    ...new Set(allPhotosAndAlbumsByPhone.map((d) => d.pd_albums.albumId)),
-                ].forEach((e) => {
-                    insertData.push({ albumId: e, clientId });
+                    .where((0, expressions_1.like)(photosTable.clients, phone))
+                    .then(async (query) => {
+                    if (!query.length)
+                        return;
+                    const insertData = [];
+                    [...new Set(query.map((q) => q.pd_albums.albumId))].forEach((e) => {
+                        insertData.push({ albumId: e, clientId });
+                    });
+                    await db
+                        .insert(clientAlbumsTable)
+                        .values(...insertData)
+                        .onConflictDoNothing();
                 });
-                await db
-                    .insert(clientAlbumsTable)
-                    .values(...insertData)
-                    .onConflictDoNothing();
                 const mapped = new Map();
                 await db
                     .select(clientAlbumsTable)

@@ -23,29 +23,31 @@ class DashboardController {
     );
 
     try {
+      // AI SIMULATION
       // get user info + phone
       const user = await db
         .select(clientTable)
         .where(eq(clientTable.clientId, clientId));
       const { phone } = user[0];
       // get all users photo + albums
-      const allPhotosAndAlbumsByPhone = await db
+      await db
         .select(photosTable)
         .innerJoin(albumsTable, eq(photosTable.albumId, albumsTable.albumId))
-        .where(like(photosTable.clients, phone));
-
-      const insertData: Array<{ albumId: string; clientId: string }> = [];
-      // creating albums data for client users and store to DB
-      [
-        ...new Set(allPhotosAndAlbumsByPhone.map((d) => d.pd_albums.albumId)),
-      ].forEach((e) => {
-        insertData.push({ albumId: e, clientId });
-      });
-      // save albums data in db
-      await db
-        .insert(clientAlbumsTable)
-        .values(...insertData)
-        .onConflictDoNothing();
+        .where(like(photosTable.clients, phone))
+        .then(async (query) => {
+          if (!query.length) return;
+          // insert users data to another table
+          const insertData: Array<{ albumId: string; clientId: string }> = [];
+          // creating albums data for client users and store to DB
+          [...new Set(query.map((q) => q.pd_albums.albumId))].forEach((e) => {
+            insertData.push({ albumId: e, clientId });
+          });
+          // save albums data in db
+          await db
+            .insert(clientAlbumsTable)
+            .values(...insertData)
+            .onConflictDoNothing();
+        });
 
       // get data for response
       const mapped = new Map();

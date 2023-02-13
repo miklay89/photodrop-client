@@ -53,7 +53,7 @@ class AuthController {
                 const user = await db
                     .select(clientTable)
                     .leftJoin(clientSelfiesTable, (0, expressions_1.eq)(clientTable.selfieId, clientSelfiesTable.selfieId))
-                    .where((0, expressions_1.eq)(clientTable.phone, `+${countryCode}${phoneNumber}`));
+                    .where((0, expressions_1.eq)(clientTable.phone, `${countryCode}${phoneNumber}`));
                 if (user.length) {
                     const tokens = (0, jwt_generator_1.default)(user[0].pdc_client.clientId);
                     const refreshTokenExpTime = Math.floor(Date.now() + 432000000);
@@ -79,7 +79,7 @@ class AuthController {
                 }
                 const newUser = {
                     clientId: (0, uuid_1.v4)(),
-                    phone: `+${countryCode}${phoneNumber}`,
+                    phone: `${countryCode}${phoneNumber}`,
                 };
                 const savedUser = await db
                     .insert(clientTable)

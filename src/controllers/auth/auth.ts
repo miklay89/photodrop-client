@@ -65,7 +65,7 @@ class AuthController {
           clientSelfiesTable,
           eq(clientTable.selfieId, clientSelfiesTable.selfieId),
         )
-        .where(eq(clientTable.phone, `+${countryCode}${phoneNumber}`));
+        .where(eq(clientTable.phone, `${countryCode}${phoneNumber}`));
 
       // user exist - creating tokens, session, return user + selfie
       if (user.length) {
@@ -98,7 +98,7 @@ class AuthController {
       // user isn't exist - creating user, tokens and session
       const newUser = {
         clientId: uuid(),
-        phone: `+${countryCode}${phoneNumber}`,
+        phone: `${countryCode}${phoneNumber}`,
       };
 
       // saving user in DB
