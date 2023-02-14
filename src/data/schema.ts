@@ -86,13 +86,3 @@ export const clientAlbumsTable = pgTable("pdc_albums", {
     .references(() => clientTable.clientId), // ref to client id
   isUnlocked: boolean("is_unlocked").notNull().default(false), // album status
 });
-
-export const clientPaymentsTable = pgTable("pdc_payments", {
-  paymentId: text("payment_id").notNull().primaryKey(), // payment id
-  clientId: text("client_id")
-    .notNull()
-    .references(() => clientTable.clientId), // ref to client id
-  createdAt: timestamp("created_at").notNull().defaultNow(), // date of creation
-  albumId: text("album_id").notNull(), // album id
-  status: boolean("status").notNull().default(false), // payment status
-});

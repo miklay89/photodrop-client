@@ -20,6 +20,7 @@ app.use((0, cors_1.default)({
         "http://192.168.0.157:3000",
         "http://213.111.67.182:5173",
         "http://localhost:5173",
+        "http://localhost:3000",
         `https://pd-client.onrender.com:${process.env.PORT}`,
     ],
     credentials: true,

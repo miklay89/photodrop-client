@@ -1,29 +1,117 @@
 /* eslint-disable class-methods-use-this */
 import { RequestHandler } from "express";
-// import Boom from "@hapi/boom";
-// import { v4 as uuid } from "uuid";
+import Stripe from "stripe";
+import Boom from "@hapi/boom";
+import { eq, and, like } from "drizzle-orm/expressions";
 import dotenv from "dotenv";
-// import { eq } from "drizzle-orm/expressions";
-// import dbObject from "../../data/db";
+import getClientIdFromToken from "../../libs/get_client_id_from_token";
+import { IPaymentObject } from "./types";
+import dbObject from "../../data/db";
 
 dotenv.config();
 
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY as string;
+const REDIRECT_URL = process.env.REDIRECT_URL as string;
+
+const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
+
 // DB
-// const db = dbObject.Connector;
-// const { clientTable, clientSessionsTable, clientSelfiesTable } =
-//   dbObject.Tables;
+const db = dbObject.Connector;
+const { clientTable, clientAlbumsTable, albumsTable, photosTable } =
+  dbObject.Tables;
 
 class PayController {
-  public payForAlbum: RequestHandler = async (req, res, next) => {
+  public createPaymentForAlbum: RequestHandler = async (req, res, next) => {
     // user id from header
-    // album id from body
+    const clientId = getClientIdFromToken(
+      req.header("Authorization")?.replace("Bearer ", "")!,
+    );
+    const { albumId } = req.params;
+
+    // get album data and price
     // create payment link
-    // store payment in DB
-    // update albums table if all ok
     try {
-      // TODO
-      // use stripe
-      res.status(200).json({ message: "pay for album" });
+      // get user from db
+      const user = await db
+        .select(clientTable)
+        .where(eq(clientTable.clientId, clientId));
+
+      let { phone } = user[0];
+      if (phone[0] === "+") phone = phone.slice(1);
+
+      const paymentObject: IPaymentObject[] = [];
+
+      // get data for creating price
+      await db
+        .select(clientAlbumsTable)
+        .innerJoin(
+          photosTable,
+          eq(photosTable.albumId, clientAlbumsTable.albumId),
+        )
+        .innerJoin(
+          albumsTable,
+          eq(albumsTable.albumId, clientAlbumsTable.albumId),
+        )
+        .where(
+          and(
+            eq(clientAlbumsTable.clientId, clientId),
+            like(photosTable.clients, `%${phone}%`),
+            eq(albumsTable.albumId, albumId),
+          ),
+        )
+        .then((query) => {
+          if (!query.length) throw Boom.notFound();
+          const sorted = {
+            albumInfo: query[0].pd_albums,
+            count: query.map((q) => q.pd_photos).length,
+          };
+          paymentObject.push(sorted);
+        });
+
+      const product = await stripe.products.create({
+        name: paymentObject[0].albumInfo.name!,
+      });
+
+      const price = await stripe.prices.create({
+        currency: "usd",
+        unit_amount: 100,
+        product: product.id,
+      });
+
+      const paymentLink = await stripe.paymentLinks.create({
+        line_items: [{ price: price.id, quantity: paymentObject[0].count }],
+        after_completion: {
+          type: "redirect",
+          redirect: {
+            url: `${REDIRECT_URL}/pay/album/confirm-payment/${albumId}`,
+          },
+        },
+      });
+
+      res.status(200).json(paymentLink.url);
+    } catch (e) {
+      next(e);
+    }
+  };
+
+  public confirmPaymentForAlbum: RequestHandler = async (req, res, next) => {
+    const clientId = getClientIdFromToken(
+      req.header("Authorization")?.replace("Bearer ", "")!,
+    );
+    const { albumId } = req.params;
+    try {
+      // update album state
+      await db
+        .update(clientAlbumsTable)
+        .set({ isUnlocked: true })
+        .where(
+          and(
+            eq(clientAlbumsTable.clientId, clientId),
+            eq(clientAlbumsTable.albumId, albumId),
+          ),
+        )
+        .returning()
+        .then((query) => res.json(query[0]));
     } catch (e) {
       next(e);
     }
