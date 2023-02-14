@@ -12,6 +12,7 @@ dotenv.config();
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY as string;
 const REDIRECT_URL = process.env.REDIRECT_URL as string;
+const REDIRECT_FE_URL = process.env.REDIRECT_FE_URL as string;
 
 const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 
@@ -83,7 +84,7 @@ class PayController {
         after_completion: {
           type: "redirect",
           redirect: {
-            url: `${REDIRECT_URL}/pay/album/confirm-payment/${albumId}`,
+            url: `${REDIRECT_URL}/pay/album/confirm-payment/${albumId}/${clientId}`,
           },
         },
       });
@@ -95,10 +96,7 @@ class PayController {
   };
 
   public confirmPaymentForAlbum: RequestHandler = async (req, res, next) => {
-    const clientId = getClientIdFromToken(
-      req.header("Authorization")?.replace("Bearer ", "")!,
-    );
-    const { albumId } = req.params;
+    const { albumId, clientId } = req.params;
     try {
       // update album state
       await db
@@ -109,9 +107,8 @@ class PayController {
             eq(clientAlbumsTable.clientId, clientId),
             eq(clientAlbumsTable.albumId, albumId),
           ),
-        )
-        .returning()
-        .then((query) => res.json(query[0]));
+        );
+      res.status(303).redirect(`${REDIRECT_FE_URL}${albumId}`);
     } catch (e) {
       next(e);
     }

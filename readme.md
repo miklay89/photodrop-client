@@ -60,9 +60,9 @@
 #### headers: ["authorization"]: access_token
 - returns to user information of one album by album id
 #
-### [POST] /album/create-payment/${albumId}
+### [POST] /pay/album/create-payment/${albumId}
 #### body: none
 #### headers: ["authorization"]: access_token
 - creates payment link for album
-- after successful payment auto redirection to confirm endpoint ("/album/confirm-payment/${albumId}") for storing payment data
+- after successful payment auto redirection to confirm endpoint ("${HOST_URL}/pay/album/confirm-payment/${albumId}") for storing payment data
 #

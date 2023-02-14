@@ -12,6 +12,7 @@ const db_1 = __importDefault(require("../../data/db"));
 dotenv_1.default.config();
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const REDIRECT_URL = process.env.REDIRECT_URL;
+const REDIRECT_FE_URL = process.env.REDIRECT_FE_URL;
 const stripe = new stripe_1.default(STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 const db = db_1.default.Connector;
 const { clientTable, clientAlbumsTable, albumsTable, photosTable } = db_1.default.Tables;
@@ -55,7 +56,7 @@ class PayController {
                     after_completion: {
                         type: "redirect",
                         redirect: {
-                            url: `${REDIRECT_URL}/pay/album/confirm-payment/${albumId}`,
+                            url: `${REDIRECT_URL}/pay/album/confirm-payment/${albumId}/${clientId}`,
                         },
                     },
                 });
@@ -66,15 +67,13 @@ class PayController {
             }
         };
         this.confirmPaymentForAlbum = async (req, res, next) => {
-            const clientId = (0, get_client_id_from_token_1.default)(req.header("Authorization")?.replace("Bearer ", ""));
-            const { albumId } = req.params;
+            const { albumId, clientId } = req.params;
             try {
                 await db
                     .update(clientAlbumsTable)
                     .set({ isUnlocked: true })
-                    .where((0, expressions_1.and)((0, expressions_1.eq)(clientAlbumsTable.clientId, clientId), (0, expressions_1.eq)(clientAlbumsTable.albumId, albumId)))
-                    .returning()
-                    .then((query) => res.json(query[0]));
+                    .where((0, expressions_1.and)((0, expressions_1.eq)(clientAlbumsTable.clientId, clientId), (0, expressions_1.eq)(clientAlbumsTable.albumId, albumId)));
+                res.status(303).redirect(`${REDIRECT_FE_URL}${albumId}`);
             }
             catch (e) {
                 next(e);

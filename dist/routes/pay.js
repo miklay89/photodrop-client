@@ -8,5 +8,5 @@ const pay_1 = __importDefault(require("../controllers/pay/pay"));
 const is_authorized_1 = __importDefault(require("../middlewares/is_authorized"));
 const router = (0, express_1.default)();
 router.post("/album/create-payment/:albumId", is_authorized_1.default, pay_1.default.createPaymentForAlbum);
-router.get("/album/confirm-payment/:albumId", is_authorized_1.default, pay_1.default.confirmPaymentForAlbum);
+router.get("/album/confirm-payment/:albumId/:clientId", pay_1.default.confirmPaymentForAlbum);
 exports.default = router;

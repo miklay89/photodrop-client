@@ -12,8 +12,7 @@ router.post(
 );
 // confirm payment
 router.get(
-  "/album/confirm-payment/:albumId",
-  isAuthorized,
+  "/album/confirm-payment/:albumId/:clientId",
   PayController.confirmPaymentForAlbum,
 );
 
