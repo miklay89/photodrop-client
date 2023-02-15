@@ -6,6 +6,7 @@
     "middlewares",
     "mozjpeg",
     "Photodrop",
-    "Subsampling"
+    "Subsampling",
+    "Uppy"
   ]
 }
