@@ -16,13 +16,27 @@ dotenv_1.default.config();
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({
     origin: [
-        "https://photodrop-clients.vercel.app/",
+        "https://photodrop-clients.vercel.app",
         "http://192.168.0.157:3000",
         "http://213.111.67.182:5173",
         "http://localhost:5173",
         "http://localhost:3000",
-        `https://pd-client.onrender.com:${process.env.PORT}`,
     ],
+    methods: ["HEAD", "OPTIONS", "POST", "GET", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: [
+        "Content-Type",
+        "Authorization",
+        "Uppy-Versions",
+        "Accept",
+        "x-requested-with",
+        "Access-Control-Allow-Origin",
+    ],
+    exposedHeaders: [
+        "Access-Control-Allow-Headers",
+        "Access-Control-Allow-Origin",
+    ],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
     credentials: true,
 }));
 app.use((0, cookie_parser_1.default)());
