@@ -68,14 +68,14 @@ class DashboardController {
                     const photos = query.map((q) => q.photos);
                     uniqAlbumsIds.map((uaid) => {
                         const album = query.find((q) => q.albumId === uaid);
+                        const curAlbPhotos = [...photos.filter((p) => p.albumId === uaid)];
                         const reAlb = {
                             albumId: album?.albumId,
                             name: album?.name,
                             location: album?.location,
                             createdAt: album?.createdAt,
                             isUnlocked: album?.isUnlocked,
-                            cover: photos.find((p) => p.albumId === uaid)
-                                ?.unlockedThumbnailUrl,
+                            cover: curAlbPhotos[curAlbPhotos.length - 1].unlockedThumbnailUrl,
                             photos: photos.filter((p) => p.albumId === uaid),
                         };
                         mapped.set(uaid, reAlb);
@@ -143,14 +143,14 @@ class DashboardController {
                     const photos = query.map((q) => q.photos);
                     uniqAlbumsIds.map((uaid) => {
                         const album = query.find((q) => q.albumId === uaid);
+                        const curAlbPhotos = [...photos.filter((p) => p.albumId === uaid)];
                         const reAlb = {
                             albumId: album?.albumId,
                             name: album?.name,
                             location: album?.location,
                             createdAt: album?.createdAt,
                             isUnlocked: album?.isUnlocked,
-                            cover: photos.find((p) => p.albumId === uaid)
-                                ?.unlockedThumbnailUrl,
+                            cover: curAlbPhotos[curAlbPhotos.length - 1].unlockedThumbnailUrl,
                             photos: photos.filter((p) => p.albumId === uaid),
                         };
                         mapped.set(uaid, reAlb);
