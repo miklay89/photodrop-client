@@ -37,18 +37,20 @@ class AuthController {
             }
         };
         this.verifyOtp = async (req, res, next) => {
-            const countryCode = req.body.countryCode;
-            const phoneNumber = req.body.phoneNumber;
-            const otp = req.body.otp;
+            const { countryCode, phoneNumber, otp } = req.body;
             try {
-                const validationOtp = await client.verify
+                await client.verify
                     .services(serviceSid)
                     .verificationChecks.create({
                     to: `+${countryCode}${phoneNumber}`,
                     code: otp,
                 })
+                    .then((r) => {
+                    if (!r.valid)
+                        throw boom_1.default.badRequest("Invalid otp code.");
+                })
                     .catch(() => {
-                    throw boom_1.default.badData("Invalid otp code.");
+                    throw boom_1.default.badRequest("Invalid otp code.");
                 });
                 const user = await db
                     .select(clientTable)
@@ -74,7 +76,6 @@ class AuthController {
                         accessToken: tokens.accessToken,
                         user: user[0].pdc_client,
                         selfie: user[0].pdc_selfies,
-                        otp: validationOtp,
                     });
                 }
                 const newUser = {
@@ -103,7 +104,6 @@ class AuthController {
                     .json({
                     accessToken: tokens.accessToken,
                     user: savedUser[0],
-                    otp: validationOtp,
                 });
             }
             catch (e) {

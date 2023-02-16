@@ -97,14 +97,14 @@ class DashboardController {
           // eslint-disable-next-line array-callback-return
           uniqAlbumsIds.map((uaid) => {
             const album = query.find((q) => q.albumId === uaid);
-            const curAlbPhotos = [...photos.filter((p) => p.albumId === uaid)];
             const reAlb = {
               albumId: album?.albumId,
               name: album?.name,
               location: album?.location,
               createdAt: album?.createdAt,
               isUnlocked: album?.isUnlocked,
-              cover: curAlbPhotos[curAlbPhotos.length - 1].unlockedThumbnailUrl,
+              cover: photos.filter((p) => p.albumId === uaid).pop()
+                ?.unlockedThumbnailUrl,
               photos: photos.filter((p) => p.albumId === uaid),
             };
             mapped.set(uaid, reAlb);
@@ -190,14 +190,14 @@ class DashboardController {
           // eslint-disable-next-line array-callback-return
           uniqAlbumsIds.map((uaid) => {
             const album = query.find((q) => q.albumId === uaid);
-            const curAlbPhotos = [...photos.filter((p) => p.albumId === uaid)];
             const reAlb = {
               albumId: album?.albumId,
               name: album?.name,
               location: album?.location,
               createdAt: album?.createdAt,
               isUnlocked: album?.isUnlocked,
-              cover: curAlbPhotos[curAlbPhotos.length - 1].unlockedThumbnailUrl,
+              cover: photos.filter((p) => p.albumId === uaid).pop()
+                ?.unlockedThumbnailUrl,
               photos: photos.filter((p) => p.albumId === uaid),
             };
             mapped.set(uaid, reAlb);

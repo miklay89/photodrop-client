@@ -42,20 +42,21 @@ class AuthController {
 
   // if ok need to return user + selfie
   public verifyOtp: RequestHandler = async (req, res, next) => {
-    const countryCode = req.body.countryCode as string;
-    const phoneNumber = req.body.phoneNumber as string;
-    const otp = req.body.otp as string;
+    const { countryCode, phoneNumber, otp } = req.body;
 
     try {
       // verify otp code
-      const validationOtp = await client.verify
+      await client.verify
         .services(serviceSid)
         .verificationChecks.create({
           to: `+${countryCode}${phoneNumber}`,
           code: otp,
         })
+        .then((r) => {
+          if (!r.valid) throw Boom.badRequest("Invalid otp code.");
+        })
         .catch(() => {
-          throw Boom.badData("Invalid otp code.");
+          throw Boom.badRequest("Invalid otp code.");
         });
 
       // checking user in DB
@@ -91,7 +92,6 @@ class AuthController {
             accessToken: tokens.accessToken,
             user: user[0].pdc_client,
             selfie: user[0].pdc_selfies,
-            otp: validationOtp,
           });
       }
 
@@ -128,7 +128,6 @@ class AuthController {
         .json({
           accessToken: tokens.accessToken,
           user: savedUser[0],
-          otp: validationOtp,
         });
     } catch (e) {
       next(e);
