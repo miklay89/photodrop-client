@@ -93,7 +93,7 @@ class DashboardController {
         .then((query) => {
           if (!query.length) throw Boom.notFound();
           const uniqAlbumsIds = [...new Set(query.map((q) => q.albumId))];
-          const photos = query.map((q) => q.photos);
+          const photos = query.map((q) => q.photos).reverse();
           // eslint-disable-next-line array-callback-return
           uniqAlbumsIds.map((uaid) => {
             const album = query.find((q) => q.albumId === uaid);

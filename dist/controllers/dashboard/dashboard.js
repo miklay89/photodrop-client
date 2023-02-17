@@ -65,7 +65,7 @@ class DashboardController {
                     if (!query.length)
                         throw boom_1.default.notFound();
                     const uniqAlbumsIds = [...new Set(query.map((q) => q.albumId))];
-                    const photos = query.map((q) => q.photos);
+                    const photos = query.map((q) => q.photos).reverse();
                     uniqAlbumsIds.map((uaid) => {
                         const album = query.find((q) => q.albumId === uaid);
                         const reAlb = {
