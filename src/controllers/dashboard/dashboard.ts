@@ -103,7 +103,7 @@ class DashboardController {
               location: album?.location,
               createdAt: album?.createdAt,
               isUnlocked: album?.isUnlocked,
-              cover: photos.filter((p) => p.albumId === uaid).pop()
+              cover: photos.filter((p) => p.albumId === uaid)[0]
                 ?.unlockedThumbnailUrl,
               photos: photos.filter((p) => p.albumId === uaid),
             };
@@ -187,6 +187,7 @@ class DashboardController {
           if (!query.length) throw Boom.notFound();
           const uniqAlbumsIds = [...new Set(query.map((q) => q.albumId))];
           const photos = query.map((q) => q.photos);
+          console.log(photos);
           // eslint-disable-next-line array-callback-return
           uniqAlbumsIds.map((uaid) => {
             const album = query.find((q) => q.albumId === uaid);
@@ -196,7 +197,7 @@ class DashboardController {
               location: album?.location,
               createdAt: album?.createdAt,
               isUnlocked: album?.isUnlocked,
-              cover: photos.filter((p) => p.albumId === uaid).pop()
+              cover: photos.filter((p) => p.albumId === uaid)[0]
                 ?.unlockedThumbnailUrl,
               photos: photos.filter((p) => p.albumId === uaid),
             };

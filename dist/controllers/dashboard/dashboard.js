@@ -74,7 +74,7 @@ class DashboardController {
                             location: album?.location,
                             createdAt: album?.createdAt,
                             isUnlocked: album?.isUnlocked,
-                            cover: photos.filter((p) => p.albumId === uaid).pop()
+                            cover: photos.filter((p) => p.albumId === uaid)[0]
                                 ?.unlockedThumbnailUrl,
                             photos: photos.filter((p) => p.albumId === uaid),
                         };
@@ -141,6 +141,7 @@ class DashboardController {
                         throw boom_1.default.notFound();
                     const uniqAlbumsIds = [...new Set(query.map((q) => q.albumId))];
                     const photos = query.map((q) => q.photos);
+                    console.log(photos);
                     uniqAlbumsIds.map((uaid) => {
                         const album = query.find((q) => q.albumId === uaid);
                         const reAlb = {
@@ -149,7 +150,7 @@ class DashboardController {
                             location: album?.location,
                             createdAt: album?.createdAt,
                             isUnlocked: album?.isUnlocked,
-                            cover: photos.filter((p) => p.albumId === uaid).pop()
+                            cover: photos.filter((p) => p.albumId === uaid)[0]
                                 ?.unlockedThumbnailUrl,
                             photos: photos.filter((p) => p.albumId === uaid),
                         };
