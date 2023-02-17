@@ -74,7 +74,7 @@ class DashboardController {
                             location: album?.location,
                             createdAt: album?.createdAt,
                             isUnlocked: album?.isUnlocked,
-                            cover: photos.filter((p) => p.albumId === uaid).pop()
+                            cover: photos.filter((p) => p.albumId === uaid)[0]
                                 ?.unlockedThumbnailUrl,
                             photos: photos.filter((p) => p.albumId === uaid),
                         };
