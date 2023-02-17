@@ -48,11 +48,11 @@ class PayController {
                 });
                 const price = await stripe.prices.create({
                     currency: "usd",
-                    unit_amount: 100,
+                    unit_amount: 500,
                     product: product.id,
                 });
                 const paymentLink = await stripe.paymentLinks.create({
-                    line_items: [{ price: price.id, quantity: paymentObject[0].count }],
+                    line_items: [{ price: price.id, quantity: 1 }],
                     after_completion: {
                         type: "redirect",
                         redirect: {
