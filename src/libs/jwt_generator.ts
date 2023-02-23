@@ -1,7 +1,10 @@
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
+import dotenv from "dotenv";
 
-const tokenSecret = process.env.TOKEN_SECRET as string;
+dotenv.config();
+
+const tokenSecret = process.env.TOKEN_SECRET;
 
 export default function createTokens(clientId: string) {
   const accessToken = jwt.sign(

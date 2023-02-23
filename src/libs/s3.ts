@@ -1,11 +1,10 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import S3 from "aws-sdk/clients/s3";
 import { v4 as uuid } from "uuid";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const bucketName = process.env.AWS_BUCKET_NAME as string;
+const bucketName = process.env.AWS_BUCKET_NAME;
 const region = process.env.AWS_REGION;
 const accessKeyId = process.env.AWS_ACCESS_KEY;
 const secretAccessKey = process.env.AWS_SECRET;

@@ -1,11 +1,9 @@
-/* eslint-disable class-methods-use-this */
 import Joi from "joi";
 import Boom from "@hapi/boom";
 import { RequestHandler } from "express";
 
-class AuthValidator {
-  // auth/sing-in/send-otp body validation
-  public checkSendOtpBody: RequestHandler = (req, res, next) => {
+export default class AuthValidator {
+  static checkSendOtpBody: RequestHandler = (req, res, next) => {
     try {
       const schema = Joi.object({
         phoneNumber: Joi.number().required(),
@@ -20,8 +18,7 @@ class AuthValidator {
     }
   };
 
-  // auth/sign-in/verify-otp body validation
-  public checkVerifyOtpBody: RequestHandler = (req, res, next) => {
+  static checkVerifyOtpBody: RequestHandler = (req, res, next) => {
     try {
       const schema = Joi.object({
         phoneNumber: Joi.number().required(),
@@ -37,8 +34,7 @@ class AuthValidator {
     }
   };
 
-  // auth/refresh
-  public checkCookies: RequestHandler = (req, res, next) => {
+  static checkCookies: RequestHandler = (req, res, next) => {
     try {
       const schema = Joi.object({
         refreshToken: Joi.string().required(),
@@ -52,5 +48,3 @@ class AuthValidator {
     }
   };
 }
-
-export default new AuthValidator();

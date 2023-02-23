@@ -1,51 +1,65 @@
-/* eslint-disable class-methods-use-this */
 import { RequestHandler } from "express";
 import Boom from "@hapi/boom";
 import { v4 as uuid } from "uuid";
 import dotenv from "dotenv";
 import { Twilio } from "twilio";
-import { eq } from "drizzle-orm/expressions";
-import dbObject from "../../data/db";
 import createTokens from "../../libs/jwt_generator";
 import getClientIdFromToken from "../../libs/get_client_id_from_token";
+import {
+  SendOtpRequest,
+  TypedResponse,
+  VerifyOtpRequest,
+  RefreshTokensRequest,
+} from "../../types/types";
+import UserRepository from "../../repositories/user";
+import Session from "../../entities/session";
+import User from "../../entities/user";
+import SessionRepository from "../../repositories/session";
+import { PDCSelfie } from "../../data/schema";
 
 dotenv.config();
-// TWILIO
-const accountSid = process.env.TWILIO_ACCOUNT_SID as string;
-const authToken = process.env.TWILIO_AUTH_TOKEN as string;
-const serviceSid = process.env.TWILIO_SERVICE_SID as string;
+
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const serviceSid = process.env.TWILIO_SERVICE_SID;
 const client = new Twilio(accountSid, authToken);
 
-// DB
-const db = dbObject.Connector;
-const { clientTable, clientSessionsTable, clientSelfiesTable } =
-  dbObject.Tables;
-
-class AuthController {
-  public sendOtp: RequestHandler = async (req, res, next) => {
-    const countryCode = req.body.countryCode as string;
-    const phoneNumber = req.body.phoneNumber as string;
+export default class AuthController {
+  static sendOtp: RequestHandler = async (
+    req: SendOtpRequest,
+    res: TypedResponse<{ message: string }>,
+    next,
+  ) => {
+    const { countryCode, phoneNumber } = req.body;
 
     try {
-      const otpRes = await client.verify
+      await client.verify
         .services(serviceSid)
         .verifications.create({
           to: `+${countryCode}${phoneNumber}`,
           channel: "sms",
-        });
+        })
+        .catch((e) => next(e));
 
-      res.status(200).json({ message: otpRes });
+      res.status(200).json({ message: "OTP sent." });
     } catch (e) {
       next(e);
     }
   };
 
-  // if ok need to return user + selfie
-  public verifyOtp: RequestHandler = async (req, res, next) => {
+  static verifyOtp: RequestHandler = async (
+    req: VerifyOtpRequest,
+    res: TypedResponse<{
+      accessToken: string;
+      user: User;
+      selfie?: PDCSelfie | null;
+    }>,
+    next,
+  ) => {
     const { countryCode, phoneNumber, otp } = req.body;
+    const fullPhone = `${countryCode}${phoneNumber}`;
 
     try {
-      // verify otp code
       await client.verify
         .services(serviceSid)
         .verificationChecks.create({
@@ -59,31 +73,24 @@ class AuthController {
           throw Boom.badRequest("Invalid otp code.");
         });
 
-      // checking user in DB
-      const user = await db
-        .select(clientTable)
-        .leftJoin(
-          clientSelfiesTable,
-          eq(clientTable.selfieId, clientSelfiesTable.selfieId),
-        )
-        .where(eq(clientTable.phone, `${countryCode}${phoneNumber}`));
+      const user = await UserRepository.getUserByPhone(fullPhone);
 
-      // user exist - creating tokens, session, return user + selfie
-      if (user.length) {
+      if (user) {
         const tokens = createTokens(user[0].pdc_client.clientId);
         const refreshTokenExpTime = Math.floor(Date.now() + 432000000);
-        const sessionExpireTimestamp = new Date(refreshTokenExpTime).toJSON();
-        const newSession = {
-          sessionId: uuid(),
-          clientId: user[0].pdc_client.clientId,
-          refreshToken: tokens.refreshToken,
-          expiresIn: sessionExpireTimestamp as unknown as Date,
-        };
+        const sessionExpireTimestamp = new Date(
+          refreshTokenExpTime,
+        ).toJSON() as unknown as Date;
+        const newSession = new Session(
+          uuid(),
+          user[0].pdc_client.clientId,
+          tokens.refreshToken,
+          sessionExpireTimestamp,
+        );
 
-        // saving session in DB
-        await db.insert(clientSessionsTable).values(newSession);
-        // res to user
-        return res
+        await SessionRepository.saveSession(newSession);
+
+        res
           .cookie("refreshToken", tokens.refreshToken, {
             httpOnly: true,
             sameSite: "strict",
@@ -93,102 +100,82 @@ class AuthController {
             user: user[0].pdc_client,
             selfie: user[0].pdc_selfies,
           });
+      } else {
+        const newUser = new User(uuid(), fullPhone);
+
+        await UserRepository.saveUser(newUser);
+
+        const tokens = createTokens(newUser.clientId);
+        const refreshTokenExpTime = Math.floor(Date.now() + 432000000);
+        const sessionExpireTimestamp = new Date(
+          refreshTokenExpTime,
+        ).toJSON() as unknown as Date;
+
+        const newSession = new Session(
+          uuid(),
+          newUser.clientId,
+          tokens.refreshToken,
+          sessionExpireTimestamp,
+        );
+
+        await SessionRepository.saveSession(newSession);
+
+        res
+          .cookie("refreshToken", tokens.refreshToken, {
+            httpOnly: true,
+            sameSite: "strict",
+          })
+          .json({
+            accessToken: tokens.accessToken,
+            user: newUser,
+          });
       }
-
-      // user isn't exist - creating user, tokens and session
-      const newUser = {
-        clientId: uuid(),
-        phone: `${countryCode}${phoneNumber}`,
-      };
-
-      // saving user in DB
-      const savedUser = await db
-        .insert(clientTable)
-        .values(newUser)
-        .returning();
-      // creating tokens
-      const tokens = createTokens(savedUser[0].clientId);
-      const refreshTokenExpTime = Math.floor(Date.now() + 432000000);
-      const sessionExpireTimestamp = new Date(refreshTokenExpTime).toJSON();
-      // creating session
-      const newSession = {
-        sessionId: uuid(),
-        clientId: savedUser[0].clientId,
-        refreshToken: tokens.refreshToken,
-        expiresIn: sessionExpireTimestamp as unknown as Date,
-      };
-      // saving session in DB
-      await db.insert(clientSessionsTable).values(newSession);
-      // res to user
-      return res
-        .cookie("refreshToken", tokens.refreshToken, {
-          httpOnly: true,
-          sameSite: "strict",
-        })
-        .json({
-          accessToken: tokens.accessToken,
-          user: savedUser[0],
-        });
     } catch (e) {
       next(e);
     }
-    return null;
   };
 
-  public refresh: RequestHandler = async (req, res, next) => {
-    const refreshToken = req.cookies.refreshToken as string;
+  static refresh: RequestHandler = async (
+    req: RefreshTokensRequest,
+    res: TypedResponse<{ accessToken: string }>,
+    next,
+  ) => {
+    const { refreshToken } = req.cookies;
     const timeStamp = new Date(Date.now()).toJSON();
 
     try {
-      // check existing session in DB
-      const sessionIsExist = await db
-        .select(clientSessionsTable)
-        .where(eq(clientSessionsTable.refreshToken, refreshToken));
+      const session = await SessionRepository.getSessionByRefreshToken(
+        refreshToken,
+      );
 
-      // session isn't exist
-      if (!sessionIsExist.length)
-        throw Boom.badRequest("Invalid refresh token.");
+      if (!session) throw Boom.badRequest("Invalid refresh token.");
 
-      // check session expiration
       if (
         Date.parse(timeStamp) >=
-        Date.parse(sessionIsExist[0].expiresIn as unknown as string)
+        Date.parse(session[0].expiresIn as unknown as string)
       ) {
-        // delete old session
-        await db
-          .delete(clientSessionsTable)
-          .where(
-            eq(clientSessionsTable.sessionId, sessionIsExist[0].sessionId),
-          );
-
-        return res
-          .status(401)
-          .json(Boom.badRequest("Session is expired, please log-in."));
+        await SessionRepository.deleteSessionById(session[0].sessionId);
+        throw Boom.unauthorized("Session is expired, please log-in.");
       }
 
-      // creating new tokens - access and refresh
-      const newTokens = createTokens(sessionIsExist[0].clientId);
-
-      // creating new session
-      // session expire in - 5 days
+      const newTokens = createTokens(session[0].clientId);
       const refreshTokenExpTime = Math.floor(Date.now() + 432000000);
-      const sessionExpireTimestamp = new Date(refreshTokenExpTime).toJSON();
+      const sessionExpireTimestamp = new Date(
+        refreshTokenExpTime,
+      ).toJSON() as unknown as Date;
+      const newSession = new Session(
+        session[0].sessionId,
+        session[0].clientId,
+        newTokens.refreshToken,
+        sessionExpireTimestamp,
+      );
 
-      // update session in DB
-      const newSession = {
-        sessionId: sessionIsExist[0].sessionId,
-        clientId: sessionIsExist[0].clientId,
-        refreshToken: newTokens.refreshToken,
-        expiresIn: sessionExpireTimestamp as unknown as Date,
-      };
+      await SessionRepository.updateSessionById(
+        newSession,
+        newSession.sessionId,
+      );
 
-      // update session in DB
-      await db
-        .update(clientSessionsTable)
-        .set(newSession)
-        .where(eq(clientSessionsTable.sessionId, newSession.sessionId));
-      // res to user
-      return res
+      res
         .cookie("refreshToken", newTokens.refreshToken, {
           httpOnly: true,
           sameSite: "strict",
@@ -197,31 +184,30 @@ class AuthController {
     } catch (e) {
       next(e);
     }
-    return null;
   };
 
-  public me: RequestHandler = async (req, res, next) => {
+  static me: RequestHandler = async (
+    req,
+    res: TypedResponse<{
+      user: User;
+      selfie?: PDCSelfie | null;
+    }>,
+    next,
+  ) => {
     const clientId = getClientIdFromToken(
       req.header("Authorization")?.replace("Bearer ", "")!,
     );
     try {
-      const user = await db
-        .select(clientTable)
-        .leftJoin(
-          clientSelfiesTable,
-          eq(clientTable.selfieId, clientSelfiesTable.selfieId),
-        )
-        .where(eq(clientTable.clientId, clientId));
+      const user = await UserRepository.getUserById(clientId);
 
-      return res.json({
+      if (!user) throw Boom.notFound();
+
+      res.json({
         user: user[0].pdc_client,
         selfie: user[0].pdc_selfies,
       });
     } catch (e) {
       next(e);
     }
-    return null;
   };
 }
-
-export default new AuthController();

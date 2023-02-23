@@ -1,11 +1,9 @@
-/* eslint-disable class-methods-use-this */
 import Joi from "joi";
 import Boom from "@hapi/boom";
 import { RequestHandler } from "express";
 
-class UserValidator {
-  // user/update-name body validation
-  public checkUpdateFullNameBody: RequestHandler = (req, res, next) => {
+export default class UserValidator {
+  static checkUpdateFullNameBody: RequestHandler = (req, res, next) => {
     try {
       const schema = Joi.object({
         fullName: Joi.string().required(),
@@ -19,8 +17,7 @@ class UserValidator {
     }
   };
 
-  // user/update-email body validation
-  public checkUpdateEmailBody: RequestHandler = (req, res, next) => {
+  static checkUpdateEmailBody: RequestHandler = (req, res, next) => {
     try {
       const schema = Joi.object({
         email: Joi.string().email().required(),
@@ -34,8 +31,7 @@ class UserValidator {
     }
   };
 
-  // user/upload-selfie body validation
-  public checkUploadSelfieBody: RequestHandler = (req, res, next) => {
+  static checkUploadSelfieBody: RequestHandler = (req, res, next) => {
     try {
       const bodySchema = Joi.object({
         shiftX: Joi.number().required(),
@@ -61,5 +57,3 @@ class UserValidator {
     }
   };
 }
-
-export default new UserValidator();

@@ -1,0 +1,225 @@
+{
+  "version": "4",
+  "dialect": "pg",
+  "id": "084ad96e-d047-4392-a29d-a78970b906b3",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "pd_albums": {
+      "name": "pd_albums",
+      "schema": "",
+      "columns": {
+        "album_id": {
+          "name": "album_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "location": {
+          "name": "location",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pd_albums_user_id_pd_users_user_id_fk": {
+          "name": "pd_albums_user_id_pd_users_user_id_fk",
+          "tableFrom": "pd_albums",
+          "tableTo": "pd_users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      }
+    },
+    "pd_photos": {
+      "name": "pd_photos",
+      "schema": "",
+      "columns": {
+        "photo_id": {
+          "name": "photo_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "unlocked_photo_url": {
+          "name": "unlocked_photo_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "unlocked_thumbnail_url": {
+          "name": "unlocked_thumbnail_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "locked_photo_url": {
+          "name": "locked_photo_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "locked_thumbnail_url": {
+          "name": "locked_thumbnail_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "album_id": {
+          "name": "album_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "clients": {
+          "name": "clients",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pd_photos_album_id_pd_albums_album_id_fk": {
+          "name": "pd_photos_album_id_pd_albums_album_id_fk",
+          "tableFrom": "pd_photos",
+          "tableTo": "pd_albums",
+          "columnsFrom": [
+            "album_id"
+          ],
+          "columnsTo": [
+            "album_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      }
+    },
+    "pd_sessions": {
+      "name": "pd_sessions",
+      "schema": "",
+      "columns": {
+        "session_id": {
+          "name": "session_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "refresh_token": {
+          "name": "refresh_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_in": {
+          "name": "expires_in",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pd_sessions_user_id_pd_users_user_id_fk": {
+          "name": "pd_sessions_user_id_pd_users_user_id_fk",
+          "tableFrom": "pd_sessions",
+          "tableTo": "pd_users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "user_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      }
+    },
+    "pd_users": {
+      "name": "pd_users",
+      "schema": "",
+      "columns": {
+        "login": {
+          "name": "login",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "full_name": {
+          "name": "full_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {}
+    }
+  },
+  "enums": {},
+  "schemas": {}
+}

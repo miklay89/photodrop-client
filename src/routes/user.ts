@@ -4,9 +4,8 @@ import UserValidator from "../validators/user_validators";
 import upload from "../libs/multer";
 import UserController from "../controllers/user/user";
 
-// upload selfie
 const router = Router();
-// upload selfie
+
 router.post(
   "/upload-selfie",
   isAuthorized,
@@ -14,14 +13,12 @@ router.post(
   UserValidator.checkUploadSelfieBody,
   UserController.uploadSelfie,
 );
-// update name
 router.put(
   "/update-name",
   isAuthorized,
   UserValidator.checkUpdateFullNameBody,
   UserController.updateUserName,
 );
-// update email
 router.put(
   "/update-email",
   isAuthorized,

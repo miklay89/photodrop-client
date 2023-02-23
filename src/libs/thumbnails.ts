@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 import sharp from "sharp";
 
 const thumbnail = async (file: Buffer) => {

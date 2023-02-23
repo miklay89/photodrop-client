@@ -1,104 +1,62 @@
-/* eslint-disable class-methods-use-this */
 import { RequestHandler } from "express";
 import { v4 as uuid } from "uuid";
-import dotenv from "dotenv";
-import { eq } from "drizzle-orm/expressions";
-import dbObject from "../../data/db";
+import Boom from "@hapi/boom";
 import uploadFileToS3 from "../../libs/s3";
 import convertToPng from "../../libs/convert_to_png";
 import thumbnail from "../../libs/thumbnails";
-import { IFile } from "./types";
+import {
+  File,
+  TypedResponse,
+  UpdateUserEmailRequest,
+  UpdateUserNameRequest,
+  UploadSelfieRequest,
+} from "../../types/types";
 import getClientIdFromToken from "../../libs/get_client_id_from_token";
+import Selfie from "../../entities/selfie";
+import SelfieRepository from "../../repositories/selfie";
+import UserRepository from "../../repositories/user";
+import { PDCClient, PDCSelfie } from "../../data/schema";
 
-dotenv.config();
-
-// DB
-const db = dbObject.Connector;
-const { clientSelfiesTable, clientTable } = dbObject.Tables;
-
-class UserController {
-  public uploadSelfie: RequestHandler = async (req, res, next) => {
-    // get clientId from headers
+export default class UserController {
+  static uploadSelfie: RequestHandler = async (
+    req: UploadSelfieRequest,
+    res: TypedResponse<{ user: PDCClient; selfie: PDCSelfie | null }>,
+    next,
+  ) => {
     const clientId = getClientIdFromToken(
       req.header("Authorization")?.replace("Bearer ", "")!,
     );
 
-    console.log("selfie", req.body);
-
-    const selfie = req.file as IFile;
+    const selfie = req.file as File;
     const { shiftX, shiftY, zoom, width, height } = req.body;
 
     try {
       let file = selfie.buffer;
       let extName = selfie.originalname.split(".").pop()?.toLowerCase()!;
-      // check type of selfie if heic convert to png
+
       if (selfie.originalname.split(".").pop()?.toLowerCase() === "heic") {
         file = await convertToPng(file);
         extName = "png";
       }
+
       const selfieThumbnail = await thumbnail(file);
 
-      const newSelfie = {
-        selfieId: uuid(),
-        selfieUrl: await uploadFileToS3(file, extName),
-        selfieThumbnail: await uploadFileToS3(selfieThumbnail, "jpeg"),
-        shiftX: parseFloat(shiftX) || 0,
-        shiftY: parseFloat(shiftY) || 0,
-        zoom: parseFloat(zoom) || 0,
-        width: parseFloat(width) || 0,
-        height: parseFloat(height) || 0,
-      };
+      const newSelfie = new Selfie(
+        uuid(),
+        await uploadFileToS3(file, extName),
+        await uploadFileToS3(selfieThumbnail, "jpeg"),
+        shiftX || 0,
+        shiftY || 0,
+        zoom || 0,
+        width || 0,
+        height || 0,
+      );
 
-      // save selfie in DB
-      await db.insert(clientSelfiesTable).values(newSelfie);
+      await SelfieRepository.saveSelfie(newSelfie);
+      await UserRepository.updateUserSelfie(newSelfie.selfieId, clientId);
+      const updatedUser = await UserRepository.getUserById(clientId);
 
-      // update user info in db
-      await db
-        .update(clientTable)
-        .set({ selfieId: newSelfie.selfieId })
-        .where(eq(clientTable.clientId, clientId));
-
-      const updatedUser = await db
-        .select(clientTable)
-        .leftJoin(
-          clientSelfiesTable,
-          eq(clientTable.selfieId, clientSelfiesTable.selfieId),
-        )
-        .where(eq(clientTable.clientId, clientId));
-
-      // res to user
-      return res.status(200).json({
-        user: updatedUser[0].pdc_client,
-        selfie: updatedUser[0].pdc_selfies,
-      });
-    } catch (e) {
-      next(e);
-    }
-    return null;
-  };
-
-  public updateUserName: RequestHandler = async (req, res, next) => {
-    // get clientId from headers
-    const clientId = getClientIdFromToken(
-      req.header("Authorization")?.replace("Bearer ", "")!,
-    );
-    const { fullName } = req.body;
-
-    try {
-      // save user name
-      await db
-        .update(clientTable)
-        // eslint-disable-next-line object-shorthand
-        .set({ fullName: fullName as string })
-        .where(eq(clientTable.clientId, clientId));
-
-      const updatedUser = await db
-        .select(clientTable)
-        .leftJoin(
-          clientSelfiesTable,
-          eq(clientTable.selfieId, clientSelfiesTable.selfieId),
-        )
-        .where(eq(clientTable.clientId, clientId));
+      if (!updatedUser) throw Boom.notFound();
 
       res.status(200).json({
         user: updatedUser[0].pdc_client,
@@ -107,11 +65,39 @@ class UserController {
     } catch (e) {
       next(e);
     }
-    return null;
   };
 
-  public updateUserEmail: RequestHandler = async (req, res, next) => {
-    // get clientId from headers
+  static updateUserName: RequestHandler = async (
+    req: UpdateUserNameRequest,
+    res: TypedResponse<{ user: PDCClient; selfie: PDCSelfie | null }>,
+    next,
+  ) => {
+    const clientId = getClientIdFromToken(
+      req.header("Authorization")?.replace("Bearer ", "")!,
+    );
+    const { fullName } = req.body;
+
+    try {
+      await UserRepository.updateUserName(fullName, clientId);
+
+      const updatedUser = await UserRepository.getUserById(clientId);
+
+      if (!updatedUser) throw Boom.notFound();
+
+      res.status(200).json({
+        user: updatedUser[0].pdc_client,
+        selfie: updatedUser[0].pdc_selfies,
+      });
+    } catch (e) {
+      next(e);
+    }
+  };
+
+  static updateUserEmail: RequestHandler = async (
+    req: UpdateUserEmailRequest,
+    res: TypedResponse<{ user: PDCClient; selfie: PDCSelfie | null }>,
+    next,
+  ) => {
     const clientId = getClientIdFromToken(
       req.header("Authorization")?.replace("Bearer ", "")!,
     );
@@ -119,19 +105,11 @@ class UserController {
 
     try {
       // save user name
-      await db
-        .update(clientTable)
-        // eslint-disable-next-line object-shorthand
-        .set({ email: email as string })
-        .where(eq(clientTable.clientId, clientId));
+      await UserRepository.updateUserEmail(email, clientId);
 
-      const updatedUser = await db
-        .select(clientTable)
-        .leftJoin(
-          clientSelfiesTable,
-          eq(clientTable.selfieId, clientSelfiesTable.selfieId),
-        )
-        .where(eq(clientTable.clientId, clientId));
+      const updatedUser = await UserRepository.getUserById(clientId);
+
+      if (!updatedUser) throw Boom.notFound();
 
       res.status(200).json({
         user: updatedUser[0].pdc_client,
@@ -140,8 +118,5 @@ class UserController {
     } catch (e) {
       next(e);
     }
-    return null;
   };
 }
-
-export default new UserController();

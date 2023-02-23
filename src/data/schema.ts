@@ -1,4 +1,11 @@
-import { pgTable, text, timestamp, boolean, real } from "drizzle-orm-pg";
+import {
+  pgTable,
+  text,
+  timestamp,
+  boolean,
+  real,
+  InferModel,
+} from "drizzle-orm-pg";
 
 /* ################################################################################ */
 // PHOTOGRAPHER API DB
@@ -86,3 +93,14 @@ export const clientAlbumsTable = pgTable("pdc_albums", {
     .references(() => clientTable.clientId), // ref to client id
   isUnlocked: boolean("is_unlocked").notNull().default(false), // album status
 });
+
+// PHOTODROP-PHOTOGRAPHER TYPES
+export type PDPUser = InferModel<typeof usersTable>;
+export type PDPSession = InferModel<typeof sessionsTable>;
+export type PDPAlbum = InferModel<typeof albumsTable>;
+export type PDPPhoto = InferModel<typeof photosTable>;
+// PHOTODROP-CLIENT TYPES
+export type PDCSelfie = InferModel<typeof clientSelfiesTable>;
+export type PDCClient = InferModel<typeof clientTable>;
+export type PDCSession = InferModel<typeof clientSessionsTable>;
+export type PDCAlbum = InferModel<typeof clientAlbumsTable>;
